@@ -5,7 +5,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/your-username/my-app.git', branch: 'main'
+                git url: 'https://github.com/nagaveni12345/my-app.git'
             }
         }
 
