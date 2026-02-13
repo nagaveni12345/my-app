@@ -2,35 +2,45 @@ pipeline {
     agent any
 
     stages {
+
         stage('Checkout') {
             steps {
-                git 'https://github.com/your-username/my-app.git'
+                git url: 'https://github.com/your-username/my-app.git', branch: 'main'
             }
         }
 
         stage('Build Backend') {
             steps {
-                sh "cd backend && mvn clean package -DskipTests"
+                dir('backend') {
+                    sh 'mvn clean package -DskipTests'
+                }
             }
         }
 
         stage('Deploy Backend') {
             steps {
-                sh """
-                cp backend/target/demo-1.0.0.jar /var/www/my-app/
-                nohup java -jar /var/www/my-app/demo-1.0.0.jar > /var/www/my-app/app.log 2>&1 &
-                """
+                sh '''
+                    mkdir -p /var/www/my-app
+
+                    if pgrep -f demo-1.0.0.jar; then
+                        pkill -f demo-1.0.0.jar
+                    fi
+
+                    cp backend/target/demo-1.0.0.jar /var/www/my-app/
+
+                    nohup java -jar /var/www/my-app/demo-1.0.0.jar \
+                        > /var/www/my-app/app.log 2>&1 &
+                '''
             }
         }
 
         stage('Deploy Frontend') {
             steps {
-                sh """
-                mkdir -p /var/www/my-app/frontend
-                cp -r frontend/* /var/www/my-app/frontend/
-                """
+                sh '''
+                    mkdir -p /var/www/my-app/frontend
+                    cp -r frontend/* /var/www/my-app/frontend/
+                '''
             }
         }
     }
 }
-
